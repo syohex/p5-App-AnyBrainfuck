@@ -1,0 +1,28 @@
+This is Perl module App::AnyBrainfuck.
+
+INSTALLATION
+
+App::AnyBrainfuck installation is straightforward.
+If your CPAN shell is set up, you should just be able to do
+
+    % cpan App::AnyBrainfuck
+
+Download it, unpack it, then build it as per the usual:
+
+    % perl Makefile.PL
+    % make && make test
+
+Then install it:
+
+    % make install
+
+DOCUMENTATION
+
+App::AnyBrainfuck documentation is available as in POD.
+So you can do:
+
+    % perldoc App::AnyBrainfuck
+
+to read the documentation online with your favorite pager.
+
+Syohei YOSHIDA
