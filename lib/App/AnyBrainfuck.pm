@@ -81,43 +81,41 @@ sub _interpret_brainfuck {
     };
 
     my @tokens = $self->_separate_by_symbol($input_str);
-
-    my @inputs = split //, $input_str;
-    my (@jump_stack, %jump_table);
+    my %jump_table = $self->_create_jump_table(@tokens);
 
     my @tape;
-    my $index = 0;
+    my $tape_pos = 0;
+    my $pc = 0;
 
-    my $length = scalar @inputs;
-    my $token = '';
-    my $offset = 0;
-
+    my $length = scalar @tokens;
     my %op_table = %{$self->{op_table}};
-    while ($index < $length) {
-        $token .= $inputs[$offset];
-        $offset++;
+    while ($pc < $length) {
+        my $token = $tokens[$pc++];
 
-        if ($token =~ m/$op_table{'>'}/) {
-            $index++;
-        } elsif ($token =~ m/\G $op_table{'<'}/gcxms) {
-            $index--;
-            Carp::croak("Error: negative index") if $index < 0;
-        } elsif ($token =~ m/\G $op_table{'+'}/gcxms) {
-            $tape[$index]++;
-        } elsif ($token =~ m/\G $op_table{'-'}/gcxms) {
-            $tape[$index]--;
-        } elsif ($token =~ m/\G $op_table{'.'}/gcxms) {
-            print chr $tape[$index];
-        } elsif ($token =~ m/\G $op_table{','}/gcxms) {
-            chomp(my $c = <STDIN>);
-            $tape[$index] = ord $c;
-        } elsif ($token =~ m/\G $op_table{'['}/gcxms) {
-            push @jump_stack, $index;
-        } elsif ($token =~ m/\G $op_table{']'}/gcxms) {
-        } elsif ($token =~ m/\G \z}/gcxms) {
-            last;
+        if ($token eq $op_table{'>'}) {
+            $tape_pos++;
+        } elsif ($token eq $op_table{'<'}) {
+            $tape_pos--;
+            Carp::croak("Error: negative tape position") if $tape_pos < 0;
+        } elsif ($token eq $op_table{'+'}) {
+            $tape[$tape_pos]++;
+        } elsif ($token eq $op_table{'-'}) {
+            $tape[$tape_pos]--;
+        } elsif ($token eq $op_table{'.'}) {
+            print chr $tape[$tape_pos];
+        } elsif ($token eq $op_table{','}) {
+            my $c = getc STDIN;
+            $tape[$tape_pos] = $c;
+        } elsif ($token eq $op_table{'['}) {
+            if ($tape[$tape_pos] == 0) {
+                $pc = $jump_table{$pc-1};
+            }
+        } elsif ($token eq $op_table{']'}) {
+            if ($tape[$tape_pos] != 0) {
+                $pc = $jump_table{$pc-1};
+            }
         } else {
-            # ignore
+            Carp::croak("Internal Error");
         }
     }
 }
