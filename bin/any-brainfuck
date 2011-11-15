@@ -1,0 +1,8 @@
+#!perl
+use strict;
+use warnings;
+
+use App::AnyBrainfuck;
+
+my $app = App::AnyBrainfuck->new;
+$app->run;
