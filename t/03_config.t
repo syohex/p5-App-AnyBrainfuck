@@ -5,10 +5,9 @@ use Test::More;
 use App::AnyBrainfuck;
 use File::Temp ();
 
-my $tmp_conf = File::Temp->new;
+use t::Util qw(create_config_file);
 
-print {$tmp_conf} <<'...';
-+{
+my $conf = create_config_file(
     '>' => 'a',
     '<' => 'b',
     '+' => 'c',
@@ -17,20 +16,21 @@ print {$tmp_conf} <<'...';
     ',' => 'f',
     '[' => 'g',
     ']' => 'h',
-}
-...
-$tmp_conf->autoflush;
+    'separator' => "Z",
+);
 
 my $app = App::AnyBrainfuck->new;
-$app->{conf} = $tmp_conf->filename;
+$app->{conf} = $conf->filename;
 $app->_load_config;
 
 my @ops = (">", "<", "+", "-", ".", ",", "[", "]");
 my @symbols = 'a'..'h';
 
 my %table = map { $ops[$_] => $symbols[$_] } 0..(scalar @ops - 1);
-for my $op (">", "<", "+", "-", ".", ",", "[", "]") {
+for my $op (@ops) {
     is $app->{op_table}->{$op}, $table{$op}, "operation '$op'";
 }
+
+is $app->{separator}, 'Z', "'separator' param";
 
 done_testing;
