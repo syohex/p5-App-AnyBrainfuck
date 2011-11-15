@@ -34,9 +34,41 @@ sub run {
         $self->_check_param;
     }
 
+    if ($self->{helloworld}) {
+        $self->_output_hello_world;
+        exit;
+    }
+
     for my $file (@{$self->{argv}}) {
         $self->_interpret_brainfuck($file);
     }
+}
+
+sub _output_hello_world {
+    my $self = shift;
+
+    my $hello_world =<<'...';
++++++++++[>++++++++>+++++++++++>+++++<<<-]>.>++.+++++++..+++.>-.
+------------.<++++++++.--------.+++.------.--------.>+.
+...
+
+    my @outputs;
+    my $length = 0;
+    for my $c (split //, $hello_world) {
+        if (exists $self->{op_table}->{$c}) {
+            my $symbol = $self->{op_table}->{$c};
+
+            push @outputs, $symbol . ' ';
+            $length += length $symbol;
+
+            if ($length >= 80) {
+                push @outputs, "\n";
+                $length = 0;
+            }
+        }
+    }
+
+    print Encode::encode($self->{to_encoding}, join '', @outputs);
 }
 
 sub _interpret_brainfuck {
