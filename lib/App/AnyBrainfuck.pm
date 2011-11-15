@@ -125,13 +125,15 @@ sub _separate_by_symbol {
 
     my @tokens;
     if ($self->{separator}) {
-        @tokens = split /$self->{separator}/, $input;
+        @tokens = split /\s+/, $input;
 
         my %symbol_table = map { $_ => 1 } values %{$self->{op_table}};
 
         for my $t (@tokens) {
             unless (exists $symbol_table{$t}) {
-                Carp::croak("Found invalid token: $t");
+                my $err = Encode::encode($self->{to_encoding},
+                                         "Found invalid token: $t");
+                Carp::croak($err);
             }
         }
 
@@ -154,30 +156,33 @@ sub _separate_by_symbol {
 }
 
 sub _create_jump_table {
-    my ($self, $input) = @_;
-
-    my @jump_stack;
-    my %jump_table;
+    my ($self, @tokens) = @_;
 
     my $left_bracket  = $self->{op_table}->{'['};
     my $right_bracket = $self->{op_table}->{']'};
 
-    while (1) {
-        if ($input =~ m/\G $left_bracket/gcxms) {
-            push @jump_stack, pos;
-        } elsif ($input =~ m/\G $right_bracket/gcxms) {
-            my $corresponding_pos = pos @jump_stack;
-            my $pos = pos() + length $right_bracket;
-            $jump_table{$corresponding_pos} = $pos;
-            $jump_table{$pos} = $corresponding_pos;
-        } elsif ($input =~ m{\G \z}gcxms) {
-            last;
+    my (@jump_stack, %jump_table);
+    my $index = 0;
+    for my $token (@tokens) {
+        if ($token eq $left_bracket) {
+            push @jump_stack, $index;
+        } elsif ($token eq $right_bracket) {
+            my $corresponding = pop @jump_stack;
+            unless (defined $corresponding) {
+                my $error = "Error: too many right bracket '$right_bracket'";
+                Carp::croak( Encode::encode($self->{to_encoding}, $error) );
+            }
+
+            $jump_table{$corresponding} = $index + 1;
+            $jump_table{$index}         = $corresponding;
         }
+
+        $index++;
     }
 
     if (@jump_stack) {
-        my $error = "Error: not correspond '$left_bracket', '$right_bracket'";
-        Carp::croak( Encode::encode($self->{to_string}, $error) );
+        my $error = "Error: too many left bracket '$left_bracket'";
+        Carp::croak( Encode::encode($self->{to_encoding}, $error) );
     }
 
     return %jump_table;
@@ -190,7 +195,22 @@ sub _parse_options {
         "config|c=s" => \$self->{conf},
         "from|f=s"   => \$self->{from_encoding},
         "to|t=s"     => \$self->{to_encoding},
+        "helloworld" => \$self->{helloworld},
+        "help|h"     => \$self->{help},
     );
+
+    if ($self->{help}) {
+        die <<'...';
+Usage : any-brainfuck [options] file...
+
+Options:
+  -h,--help     display this help message
+  -c,--config   config file
+  -f,--from     config file encoding(default is 'utf8')
+  -t,--to       output encoding(default is 'utf8')
+  --helloworld  generate 'hello world' program from config file
+...
+    }
 
     $self->{argv} = [ @ARGV ];
 }
@@ -205,8 +225,9 @@ sub _load_config {
             = Encode::decode($self->{from_encoding}, $conf->{$_});
     } grep { exists $conf->{$_} } @ops;
 
-    my $separator = delete $conf->{separator} || '';
-    $self->{separator} = Encode::decode($self->{from_encoding}, $separator);
+    if ($conf->{separator}) {
+        $self->{separator} = 1;
+    }
 }
 
 sub _check_param {
