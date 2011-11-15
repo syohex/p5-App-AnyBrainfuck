@@ -14,7 +14,7 @@ my @ops = (">", "<", "+", "-", ".", ",", "[", "]");
 my %default_op_table = map { $_ => $_ } @ops;
 
 sub new {
-    my ($class, ) = @_;
+    my $class = shift;
 
     bless {
         from_encoding => 'utf8',
