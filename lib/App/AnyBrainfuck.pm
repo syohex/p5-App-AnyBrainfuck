@@ -61,7 +61,7 @@ sub _output_hello_world {
             push @outputs, $self->{separator} ? "$symbol " : $symbol;
             $length += length $symbol;
 
-            if ($length >= 80) {
+            if ($length >= 40) {
                 push @outputs, "\n";
                 $length = 0;
             }
