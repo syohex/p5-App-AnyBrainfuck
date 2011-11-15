@@ -58,7 +58,7 @@ sub _output_hello_world {
         if (exists $self->{op_table}->{$c}) {
             my $symbol = $self->{op_table}->{$c};
 
-            push @outputs, $symbol . ' ';
+            push @outputs, $self->{separator} ? "$symbol " : $symbol;
             $length += length $symbol;
 
             if ($length >= 80) {
@@ -69,6 +69,7 @@ sub _output_hello_world {
     }
 
     print Encode::encode($self->{to_encoding}, join '', @outputs);
+    print "\n";
 }
 
 sub _interpret_brainfuck {
