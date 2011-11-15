@@ -44,8 +44,10 @@ sub _interpret_brainfuck {
     my $input_str = do {
         local $/;
         open my $fh, "<", $file or die "Can't open $file";
-        Encode::decode($self->{from_decode}, <$fh>);
+        Encode::decode($self->{from_encoding}, <$fh>);
     };
+
+    my @tokens = $self->_separate_by_symbol($input_str);
 
     my @inputs = split //, $input_str;
     my (@jump_stack, %jump_table);
@@ -85,6 +87,39 @@ sub _interpret_brainfuck {
             # ignore
         }
     }
+}
+
+sub _separate_by_symbol {
+    my ($self, $input) = @_;
+
+    my @tokens;
+    if ($self->{separator}) {
+        @tokens = split /$self->{separator}/, $input;
+
+        my %symbol_table = map { $_ => 1 } values %{$self->{op_table}};
+
+        for my $t (@tokens) {
+            unless (exists $symbol_table{$t}) {
+                Carp::croak("Found invalid token: $t");
+            }
+        }
+
+        return @tokens;
+    } else {
+        my $op_regexp
+            = join '|', map { quotemeta $self->{op_table}->{$_} } @ops;
+        while (1) {
+            if ($input =~ m/\G ($op_regexp)/gcxms) {
+                push @tokens, $1;
+            } elsif ($input =~ m{\G \z}gcxms) {
+                last;
+            } elsif ($input =~ m{\G .}gcxms) {
+                # do nothing
+            }
+        }
+    }
+
+    return @tokens;
 }
 
 sub _create_jump_table {
@@ -139,7 +174,8 @@ sub _load_config {
             = Encode::decode($self->{from_encoding}, $conf->{$_});
     } grep { exists $conf->{$_} } @ops;
 
-    $self->{separator} = delete $conf->{separator} || '';
+    my $separator = delete $conf->{separator} || '';
+    $self->{separator} = Encode::decode($self->{from_encoding}, $separator);
 }
 
 sub _check_param {
