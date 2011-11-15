@@ -20,6 +20,7 @@ sub new {
         from_encoding => 'utf8',
         to_encoding   => 'utf8',
         op_table      => { %default_op_table },
+        separator     => 0,
     }, $class;
 }
 
