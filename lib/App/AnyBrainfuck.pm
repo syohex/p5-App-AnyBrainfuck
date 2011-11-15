@@ -268,7 +268,7 @@ __END__
 
 =head1 NAME
 
-App::AnyBrainfuck -
+App::AnyBrainfuck - Anything is Brainfuck
 
 =head1 SYNOPSIS
 
@@ -276,7 +276,7 @@ App::AnyBrainfuck -
 
 =head1 DESCRIPTION
 
-App::AnyBrainfuck is
+App::AnyBrainfuck is brainfuck created from config file.
 
 =head1 AUTHOR
 
