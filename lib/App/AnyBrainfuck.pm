@@ -159,7 +159,7 @@ sub _check_param {
         } values %{$self->{op_table}};
 
         my $length = scalar @symbols;
-        while (my $elm = pop @symbols) {
+        while (my $elm = shift @symbols) {
             for my $e (@symbols) {
                 if ($e =~ m{$elm}) {
                     Carp::croak("Error: $e is matched $elm too");
