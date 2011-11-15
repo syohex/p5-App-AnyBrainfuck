@@ -93,19 +93,19 @@ use t::Util qw(create_config_file);
         ',' => 'aaaaaa',
         '[' => 'aaaaaaa',
         ']' => 'aaaaaaaa',
-        separator => 'T',
+        separator => 1,
     );
 
     my $app = App::AnyBrainfuck->new;
     $app->{conf} = $conf->filename;
 
     $app->_load_config;
-    my $input = 'aTaaTaaaTaaaaTaaaaaTaaaaaaTaaaaaaaTaaaaaaaa';
+    my $input = 'a aa aaa aaaa aaaaa aaaaaa aaaaaaa aaaaaaaa';
     my @symbols = $app->_separate_by_symbol($input);
     is_deeply(\@symbols, [qw/a aa aaa aaaa aaaaa aaaaaa aaaaaaa aaaaaaaa/],
               "user defined symbols with separator");
 
-    $input = 'aTBaa';
+    $input = 'a Baa';
     eval {
         @symbols = $app->_separate_by_symbol($input);
     };

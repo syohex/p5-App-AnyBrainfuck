@@ -16,7 +16,7 @@ my $conf = create_config_file(
     ',' => 'f',
     '[' => 'g',
     ']' => 'h',
-    'separator' => "Z",
+    'separator' => 1,
 );
 
 my $app = App::AnyBrainfuck->new;
@@ -31,6 +31,6 @@ for my $op (@ops) {
     is $app->{op_table}->{$op}, $table{$op}, "operation '$op'";
 }
 
-is $app->{separator}, 'Z', "'separator' param";
+is $app->{separator}, 1, "'separator' param";
 
 done_testing;

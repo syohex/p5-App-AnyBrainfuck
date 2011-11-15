@@ -17,7 +17,7 @@ use t::Util qw(create_config_file);
         ',' => 'aaaaaa',
         '[' => 'aaaaaaa',
         ']' => 'aaaaaaaa',
-        'separator' => "Z",
+        'separator' => 1,
     );
 
     my $app = App::AnyBrainfuck->new;
@@ -36,7 +36,7 @@ use t::Util qw(create_config_file);
     my $conf = create_config_file(
         '>' => 'aa',
         '<' => 'aa',
-        'separator' => "Z",
+        'separator' => "1",
     );
 
     my $app = App::AnyBrainfuck->new;
